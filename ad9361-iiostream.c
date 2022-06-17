@@ -169,7 +169,7 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
 	if (!get_lo_chan(ctx, type, &chn)) { return false; }
 	wr_ch_lli(chn, "frequency", cfg->lo_hz);
 	if(type==TX){
-		wr_ch_bool(chn,'powerdown',0);
+		wr_ch_bool(chn,"powerdown",0);
 		printf("AD9361 TX LO power on"); 
 	}
 	return true;
@@ -192,7 +192,7 @@ static void shutdown()
 	printf("* Destroying context\n");
 	if (ctx) { 
 	    　get_lo_chan(ctx, TX, &chn); 		
-		wr_ch_bool(chn,'powerdown',1);
+		wr_ch_bool(chn,"powerdown",1);
 		//TX LO POWER DOWN
 		printf("AD9361 TX LO power down\n"); 
 		iio_context_destroy(ctx); 
