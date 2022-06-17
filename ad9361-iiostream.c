@@ -191,7 +191,7 @@ static void shutdown()
 
 	printf("* Destroying context\n");
 	if (ctx) { 
-	    if (!get_lo_chan(ctx, TX, &chn)) { return false; } 		
+	    　get_lo_chan(ctx, TX, &chn); 		
 		wr_ch_bool(chn,'powerdown',1);
 		//TX LO POWER DOWN
 		printf("AD9361 TX LO power down\n"); 
