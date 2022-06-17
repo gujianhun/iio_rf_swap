@@ -67,6 +67,30 @@ static struct iio_buffer  *txbuf = NULL;
 static bool stop;
 
 
+/* cleanup and exit */
+static void shutdown()
+{
+	struct iio_channel *chn = NULL;
+	printf("* Destroying buffers\n");
+	if (rxbuf) { iio_buffer_destroy(rxbuf); }
+	if (txbuf) { iio_buffer_destroy(txbuf); }
+
+	printf("* Disabling streaming channels\n");
+	if (rx0_i) { iio_channel_disable(rx0_i); }
+	if (rx0_q) { iio_channel_disable(rx0_q); }
+	if (tx0_i) { iio_channel_disable(tx0_i); }
+	if (tx0_q) { iio_channel_disable(tx0_q); }
+
+	printf("* Destroying context\n");
+	if (ctx) { 
+	    　get_lo_chan(ctx, TX, &chn); 		
+		iio_channel_attr_write_bool(chn,"powerdown",1);
+		//TX LO POWER DOWN
+		printf("AD9361 TX LO power down\n"); 
+		iio_context_destroy(ctx); 
+		}
+	exit(0);
+}
 
 static void handle_sig(int sig)
 {
@@ -175,30 +199,6 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
 	return true;
 }
 
-/* cleanup and exit */
-static void shutdown()
-{
-	struct iio_channel *chn = NULL;
-	printf("* Destroying buffers\n");
-	if (rxbuf) { iio_buffer_destroy(rxbuf); }
-	if (txbuf) { iio_buffer_destroy(txbuf); }
-
-	printf("* Disabling streaming channels\n");
-	if (rx0_i) { iio_channel_disable(rx0_i); }
-	if (rx0_q) { iio_channel_disable(rx0_q); }
-	if (tx0_i) { iio_channel_disable(tx0_i); }
-	if (tx0_q) { iio_channel_disable(tx0_q); }
-
-	printf("* Destroying context\n");
-	if (ctx) { 
-	    　get_lo_chan(ctx, TX, &chn); 		
-		wr_ch_bool(chn,"powerdown",1);
-		//TX LO POWER DOWN
-		printf("AD9361 TX LO power down\n"); 
-		iio_context_destroy(ctx); 
-		}
-	exit(0);
-}
 
 int parse_u32(char* s, uint32_t* const value) {
 	uint_fast8_t base = 10;
