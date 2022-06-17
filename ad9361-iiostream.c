@@ -66,6 +66,33 @@ static struct iio_buffer  *txbuf = NULL;
 
 static bool stop;
 
+/* helper function generating channel names */
+static char* get_ch_name(const char* type, int id)
+{
+	snprintf(tmpstr, sizeof(tmpstr), "%s%d", type, id);
+	return tmpstr;
+}
+
+/* returns ad9361 phy device */
+static struct iio_device* get_ad9361_phy(struct iio_context *ctx)
+{
+	struct iio_device *dev =  iio_context_find_device(ctx, "ad9361-phy");
+	ASSERT(dev && "No ad9361-phy found");
+	return dev;
+}
+
+
+/* finds AD9361 local oscillator IIO configuration channels */
+static bool get_lo_chan(struct iio_context *ctx, enum iodev d, struct iio_channel **chn)
+{
+	switch (d) {
+	 // LO chan is always output, i.e. true
+	case RX: *chn = iio_device_find_channel(get_ad9361_phy(ctx), get_ch_name("altvoltage", 0), true); return *chn != NULL;
+	case TX: *chn = iio_device_find_channel(get_ad9361_phy(ctx), get_ch_name("altvoltage", 1), true); return *chn != NULL;
+	default: ASSERT(0); return false;
+	}
+}
+
 
 /* cleanup and exit */
 static void shutdown()
@@ -82,8 +109,8 @@ static void shutdown()
 	if (tx0_q) { iio_channel_disable(tx0_q); }
 
 	printf("* Destroying context\n");
-	if (ctx) { 
-	    　get_lo_chan(ctx, TX, &chn); 		
+	if (ctx) {
+                get_lo_chan(ctx, TX, &chn);		
 		iio_channel_attr_write_bool(chn,"powerdown",1);
 		//TX LO POWER DOWN
 		printf("AD9361 TX LO power down\n"); 
@@ -121,20 +148,6 @@ static void wr_ch_bool(struct iio_channel *chn, const char* what, bool val)
 }
 
 
-/* helper function generating channel names */
-static char* get_ch_name(const char* type, int id)
-{
-	snprintf(tmpstr, sizeof(tmpstr), "%s%d", type, id);
-	return tmpstr;
-}
-
-/* returns ad9361 phy device */
-static struct iio_device* get_ad9361_phy(struct iio_context *ctx)
-{
-	struct iio_device *dev =  iio_context_find_device(ctx, "ad9361-phy");
-	ASSERT(dev && "No ad9361-phy found");
-	return dev;
-}
 
 /* finds AD9361 streaming IIO devices */
 static bool get_ad9361_stream_dev(struct iio_context *ctx, enum iodev d, struct iio_device **dev)
@@ -165,16 +178,7 @@ static bool get_phy_chan(struct iio_context *ctx, enum iodev d, int chid, struct
 	}
 }
 
-/* finds AD9361 local oscillator IIO configuration channels */
-static bool get_lo_chan(struct iio_context *ctx, enum iodev d, struct iio_channel **chn)
-{
-	switch (d) {
-	 // LO chan is always output, i.e. true
-	case RX: *chn = iio_device_find_channel(get_ad9361_phy(ctx), get_ch_name("altvoltage", 0), true); return *chn != NULL;
-	case TX: *chn = iio_device_find_channel(get_ad9361_phy(ctx), get_ch_name("altvoltage", 1), true); return *chn != NULL;
-	default: ASSERT(0); return false;
-	}
-}
+
 
 /* applies streaming configuration through IIO */
 bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, enum iodev type, int chid)
@@ -400,5 +404,4 @@ int main (int argc, char **argv)
 
 	return 0;
 } 
-
 
