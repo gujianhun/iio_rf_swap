@@ -315,7 +315,7 @@ int main (int argc, char **argv)
 	txcfg.rfport = "A"; // port A (select for rf freq.)
 
 	printf("* Acquiring IIO context\n");
-	ASSERT((ctx = iio_create_network_context("192.168.2.1")) && "No context");
+	ASSERT((ctx = iio_create_default_context()) && "No context");
 	ASSERT(iio_context_get_devices_count(ctx) > 0 && "No devices");
 
 	printf("* Acquiring AD9361 streaming devices\n");
